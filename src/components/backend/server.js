@@ -60,11 +60,27 @@ app.post('/login/', async (request, response) => {
   app.post('/employees-list', async (request, response) => {
     const { name, email, mobile, designation, gender, imageFile, course, createDate } = request.body;
   
-    const courseString = JSON.stringify(course);
+    try {
+      const checkEmailQuery = `SELECT * FROM employees WHERE email = ?;`;
+      const existingUser = await database.get(checkEmailQuery, [email]);
   
-    const insertEmployeeQuery = `INSERT INTO employees (name, email, mobile, designation, gender, course, date, image) VALUES (?,?,?,?,?,?,?,?);`;
-    await database.run(insertEmployeeQuery, [name, email, mobile, designation, gender, courseString, createDate, imageFile]);
-    response.status(201).send('Success');
+      if (existingUser) {
+        response.status(400).send('Duplicate Email');
+        return;
+      }
+  
+      const courseString = JSON.stringify(course);
+      const insertEmployeeQuery = `
+        INSERT INTO employees (name, email, mobile, designation, gender, course, date, image)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+      `;
+      
+      await database.run(insertEmployeeQuery, [name, email, mobile, designation, gender, courseString, createDate, imageFile]);
+      response.status(201).send('Success');
+    } catch (error) {
+      console.error('Error inserting employee:', error.message);
+      response.status(500).send('Something went wrong');
+    }
   });
 
   app.get('/employees', async (req, res) => {

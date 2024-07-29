@@ -53,7 +53,6 @@ const CreateEmployee = () => {
   const handleCourseChange = (e) => {
     const { value, checked } = e.target;
   
-    // Update the course state correctly based on whether the checkbox is checked or unchecked
     setFormData((prevFormData) => ({
       ...prevFormData,
       course: checked
@@ -85,7 +84,7 @@ const CreateEmployee = () => {
         navigate('/employee-list');
       }
     } catch (err) {
-      if (err.response?.status === 400 && err.response.data.message.includes('Duplicate')) {
+      if (err.response?.status === 400) {
         setError('Email already exists');
       } else {
         setError('Something went wrong');
